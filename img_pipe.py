@@ -49,23 +49,23 @@ class freeCoG:
    hem='';
 
    # fs subjects dir on server where you run img_pipe
-   subj_dir = "/crtx1/zgreenberg/subjects/";
+   subj_dir = "/path/to/subjects/";
    
    # IP of home computer to requester data from
-   home = "Zach@10.37.2.51";
+   home = "";
    
    # directory where imaging data is on your home machine
    # (not the server your running img_pipe on
-   home_data_dir = '/Volumes/Thunderbolt_Duo/imaging/subjects/';
+   home_data_dir = '/path/to/subjects/';
    
    # set python and bash "areal" scripts dir on current server
-   bash_dir = '/crtx1/zgreenberg/scripts/bash';
-   python_dir = '/crtx1/zgreenberg/scripts/python';
-   AFQ_dir = '/usr/local/MATLAB/R2014b/toolbox/AFQ';
-   SPM_dir = '/usr/local/MATLAB/R2014b/toolbox/spm12';
-   VISTA_dir = '/usr/local/MATLAB/R2014b/toolbox/vistasoft-master';
+   bash_dir = '/path/to/bash';
+   python_dir = '/path/to/python';
+   AFQ_dir = '/path/to/AFQ';
+   SPM_dir = '/path/to/spm12';
+   VISTA_dir = '/path/to/vistasoft-master';
    Hough_dir = '';
-   project_elecs_dir = '/crtx1/zgreenberg/scripts/MATLAB/electrode_placement/';  
+   project_elecs_dir = '/path/to/electrode_placement/';  
  
    # set dir for CT img data
    CT_dir = subj_dir + subj + '/CT/';
@@ -90,20 +90,7 @@ class freeCoG:
       self.elecs_dir = subj_dir + '/' + self.subj + '/elecs/';
       self.DWI_dir = subj_dir + '/' + self.subj + '/DTI_HARDI_55_2000/';
       self.fs_data_dir = subj_dir + '/' + self.subj + '/fs_data/';
-      #self.subj = subj;
-      #self.subj_dir = subj_dir;
-      #self.hem = hem;
-      #self.home = home;
-      #self.python_dir = python_dir;
-      #self.bash_dir = bash_dir;
-      #self.home_data_dir = home_data_dir;
-      #self.CT_dir = CT_dir;
-      #self.elecs_dir = elecs_dir
-      #self.DWI_dir;
-      #self.DWI_bval = DWI_bval;
-      #self.fsLUT_dir = fsLUT_dir;
-      #self.Hough_dir = Hough_dir;
-      #self.project_elecs_dir = project_elecs_dir;
+
 
 
    # method for running surface reconstruction using freesurfer
