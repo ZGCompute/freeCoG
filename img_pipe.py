@@ -12,12 +12,9 @@
 # major white matter bundles and full-brain connectome
 
 import os
-import numpy
 import numpy as np
 import scipy
-import scipy as scp
 import scipy.io
-import nibabel
 import nibabel as nib
 import nipy
 from scipy.spatial.distance import cdist
