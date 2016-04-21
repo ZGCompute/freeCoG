@@ -1,0 +1,11 @@
+Python 2.7.X
+numpy
+scipy
+Matplotlib
+nibabel
+nipype
+Mahotas
+freesurfer
+fsl
+ANTs
+Mayavi
