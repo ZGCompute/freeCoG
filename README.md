@@ -18,11 +18,11 @@ Dependencies include: Numpy, Scipy, nibabel, nipype, freesurfer, fsl, mrtrix, Ma
 To install freeCoG as a Python package, you should first install all dependences (see below),
 and use either pip or easy_install:
 
-pip install freeCoG
+   pip install freeCoG
 
-or 
+   or 
 
-easy_install freeCoG
+   easy_install freeCoG
 
 
 
