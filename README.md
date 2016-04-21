@@ -13,7 +13,21 @@ neuroscience data. It contains tools for:
  
  --volume rendering for CT, PET, MRI, etc...
 
-Dependencies include: Numpy, Scipy, nibabel, nipype, freesurfer, fsl, mrtrix, Mayavi, Mahotas
+Dependencies include: 
+
+Python 2.7.X
+numpy
+scipy
+Matplotlib
+nibabel
+nipype
+Mahotas
+freesurfer
+fsl
+ANTs
+Mayavi
+Vistasoft
+VTK
 
 To install freeCoG as a Python package, you should first install all dependences (see below),
 and use either pip or easy_install:
@@ -25,6 +39,8 @@ and use either pip or easy_install:
    easy_install freeCoG
    
    As of April 2016 the package is under heavy development. It is not reccomended that you attempt to install as is.
+   
+   
 
 
 
