@@ -1,4 +1,4 @@
-# img_pipe.py
+# freeCoG.py
 
 # Author: Zachary Greenberg
 # Department of Neurological Surgery
