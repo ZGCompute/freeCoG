@@ -23,6 +23,8 @@ and use either pip or easy_install:
    or 
 
    easy_install freeCoG
+   
+   As of April 2016 the package is under heavy development. It is not reccomended that you attempt to install as is.
 
 
 
