@@ -61,7 +61,7 @@ class freeCoG:
    AFQ_dir = '/path/to/AFQ';
    SPM_dir = '/path/to/spm12';
    VISTA_dir = '/path/to/vistasoft-master';
-   Hough_dir = '';
+   CV_dir = '';
    project_elecs_dir = '/path/to/electrode_placement/';  
  
    # set dir for CT img data
@@ -642,13 +642,13 @@ class freeCoG:
       
       
       
-   # member function for cleaning outputs of 3d spherical
-   # hough electrode detection.    
-   def clean_Hough3D(self,fname):
+   # member function for cleaning outputs of CV
+   # electrode detection.    
+   def clean_cv3D(self,fname):
 
-      '''Member function for cleaning outputs of 3d spherical
-         hough electrode detection. fname arg is a full-path
-         to a .mat file containing a variable 'sphcen2' w/
+      '''Member function for cleaning outputs of 3d cv
+         electrode detection. fname arg is a full-path
+         to a .mat file containing a variable w/
          xyz matrix (nx3) of elec center coordinates'''
 
 
@@ -1527,28 +1527,28 @@ class freeCoG:
        scipy.io.savemat(new_fname, {'inds':roi_inds});# save inds   
        
 
-   # member function to compute spherical hough transform for localizing electrode centers from post-implant CT
-   def Spherical_Hough(self):
+   # member function to compute cv algorithm for localizing electrode centers from post-implant CT
+   def cv_detect(self):
        
-       '''Member function for computing spherical hough transform for 
+       '''Member function for computing cv alg for 
           localizing electrode centers from post-implant CT.'''
 
-       # compute hough transform to find electrode center coordinates
+       # compute cv alg to find electrode center coordinates
        mlab = matlab.MatlabCommand();
        mlab.inputs.script = "addpath(genpath('%s')); addpath(genpath('%s')); addpath(genpath('%s')); addpath(genpath('%s')); \
        img = readFileNifti('%s/smoothed_thresh_CT.nii');img = img.data(); \
        fltr4LM_R = 3; obj_cint = 0.0; radrange = [0.1, 3]; multirad = 0.3; \
        grdthres = 0.33; \
-       [center_img,sphere_img,sphcen2,sphrad]=SphericalHough(img,radrange,grdthres, \
+       [center_img,sphere_img,sphcen2,sphrad]=CV(img,radrange,grdthres, \
        fltr4LM_R, multirad, obj_cint); save('%s/elec_spheres.mat', 'sphere_img'); \
        save('%s/elec_centers.mat', 'center_img'); \
-       save('%s/3d_hough_elect_coords.mat', 'sphcen2');" %(self.Hough_dir, self.VISTA_dir, self.SPM_dir, self.VISTA_dir, self.CT_dir, self.CT_dir , self.CT_dir, self.CT_dir);
+       save('%s/3d_elect_coords.mat', 'sphcen2');" %(self.CV_dir, self.VISTA_dir, self.SPM_dir, self.VISTA_dir, self.CT_dir, self.CT_dir , self.CT_dir, self.CT_dir);
     
-       print "::: Applying 3D hough transform to smoothed thresh-CT :::";        
+       print "::: Applying 3D cv alg to smoothed thresh-CT :::";        
        out = mlab.run(); # run the hough and get errors if any ocur
 
-       # save txt version of hough putputs
-       coords = scipy.io.loadmat(self.CT_dir + '/'+ '3d_hough_elect_coords.mat').get('sphcen2')
+       # save txt version of putputs
+       coords = scipy.io.loadmat(self.CT_dir + '/'+ '3d_cv_elect_coords.mat').get('sphcen2')
        np.savetxt((self.CT_dir + '/dirty_elecsAll.txt'), coords, delimiter=' ', fmt='%-7.1f');
        
        # load native CT to get affine and header
@@ -1666,37 +1666,37 @@ class freeCoG:
 
 
    # member function for applying CT 2 MRI registration to
-   # electrode center coordinates from 3d Hough transform
-   def reg_hough_coords(self, coords_img,source, target):
+   # electrode center coordinates from cv alg
+   def reg_cv_coords(self, coords_img,source, target):
 
       '''Member function for applying CT 2 MRI registration to
-         electrode center coordinates from 3d Hough transform localization.
+         electrode center coordinates from 3d cv localization.
          
          Function takes as input:
  
          1.) coords img - a NIFTI image with 1's present
              in the position of CT electrode centers.
          2.) source - the patients native CT  NIFTI image
-             used to calculate the hough gradient.
+             used to calculate the cv alg.
          3.) target - the patients orig.nii freesurfer volume
              output in the /mri folder after running recon-all.'''    
 
 
-      # load in detected hough electrode coordinates
+      # load in detected cv electrode coordinates
       # from source CT img
       coords_img = nib.load(coords_img);
       coords_data = coords_img.get_data();
     
       # grab 1's from img representing detected 
-      # electrode centers from hough transform
+      # electrode centers from cv alg
       coords = np.nonzero(coords_data);
       x = np.array(coords[0]);
       y = np.array(coords[1]);
       z = np.array(coords[2]);
       vox_coords = np.column_stack((x,y,z));
     
-      # save hough electrode centers as voxel coords in native CT space
-      scipy.io.savemat(self.CT_dir + '/Hough_vox_coords.mat', {'elecmatrix':vox_coords});
+      # save cv electrode centers as voxel coords in native CT space
+      scipy.io.savemat(self.CT_dir + '/cv_vox_coords.mat', {'elecmatrix':vox_coords});
     
       # load in CT2MM affine matrix
       CT_img = nib.load(source);
@@ -1712,14 +1712,14 @@ class freeCoG:
     
       # apply CT2MRI affine registration
       reg_coords = nib.affines.apply_affine(CT2MRI,vox_coords);
-      scipy.io.savemat(self.CT_dir + '/Hough_reg_vox_coords.mat', {'elecmatrix':reg_coords});
+      scipy.io.savemat(self.CT_dir + '/cv_reg_vox_coords.mat', {'elecmatrix':reg_coords});
     
       # save hough reg voxel coords in a NIFTI img for QC
       elecs_img = np.zeros(MRI_data.shape);
       for i in reg_coords:
          elecs_img[i[0], i[1], i[2]] = 1;
       N = nib.Nifti1Image(elecs_img,MRI2mm,MRI_hdr);
-      N.to_filename(self.CT_dir + '/Hough_reg_vox_coords.nii.gz');
+      N.to_filename(self.CT_dir + '/cv_reg_vox_coords.nii.gz');
     
       # vox2Ras affine for all fs orig volumes
       vox2RAS = np.array([[  -1.,    0.,    0.,  128.],
@@ -1764,7 +1764,7 @@ class freeCoG:
    # for projecting electrode coordinates onto a surface mesh
    def project_electrodes(self, mesh, elecs, hem, out):
        
-       # compute hough transform to find electrode center coordinates
+       # compute cv alg to find electrode center coordinates
        mlab = matlab.MatlabCommand();
        mlab.inputs.script = "addpath(genpath('%s')); \
                              path_to_imaging_data = '/Volumes/Thunderbolt_Duo/imaging/subjects/'; \
