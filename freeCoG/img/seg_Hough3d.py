@@ -10,9 +10,9 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 
-def seg_Hough3D(CT_dir,fname, out_fname):
+def seg_3D(CT_dir,fname, out_fname):
 
-    # load in 3D hough output
+    # load in 3D output
     coords = scipy.io.loadmat(CT_dir + '/' + fname).get('elecmatrix');
     x = coords[:,0];
     y = coords[:,1];
@@ -61,7 +61,7 @@ def seg_Hough3D(CT_dir,fname, out_fname):
     Axes3D.scatter3D(ax,x,y,z,s=s, picker=5);
     #title_font = {'fontname':'serif', 'size':'24', 'color':'black', 'weight':'bold',                            
     #'verticalalignment':'bottom'};                                                                        
-    plt.title('Hough 3D Output Coordinates: ');
+    plt.title('3D Output Coordinates: ');
     fig.canvas.mpl_connect('pick_event', onpick);
     plt.ion();
     plt.show(fig);
