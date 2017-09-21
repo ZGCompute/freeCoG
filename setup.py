@@ -46,7 +46,7 @@ setup(
                     'Python==0.2.7',
                     ],
     cmdclass={'test': PyTest},
-    author_email='ZacharyIGreenberg.com',
+    author_email='',
     description='Automated tools for Brain Imaging and Neuroscience Data',
     long_description=long_description,
     packages=['freeCoG'],
