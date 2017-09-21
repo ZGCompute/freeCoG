@@ -6,7 +6,7 @@ import numpy as np
 import os
 
 
-def CT_hough(imgs_dir,img):
+def CT_cv(imgs_dir,img):
 
     # nav to dir with images to process
     os.chdir(imgs_dir);
@@ -25,7 +25,7 @@ def CT_hough(imgs_dir,img):
     x = x[1:(len(x)-1)];
 
 
-    # iterate through slices and apply hough transform to detect circles
+    # iterate through slices and apply cv transform to detect circles
     elect_coords = np.array([0, 0, 0]);
     for i in x:
 
@@ -41,8 +41,8 @@ def CT_hough(imgs_dir,img):
         # Convert image slice to grayscale for viewing
         cimg = cv2.cvtColor(ct_img,cv2.COLOR_GRAY2BGR);
 
-        # run open-cv hough cirlces detection using gradient method
-        circles = cv2.HoughCircles(ct_img,cv.CV_HOUGH_GRADIENT,1,4, param1=7,param2=5,minRadius=1,maxRadius=4);
+        # run open-cv cirlces detection 
+        circles = cv2.Circles(ct_img,cv.CV_GRADIENT,1,4, param1=7,param2=5,minRadius=1,maxRadius=4);
     
     
         if (circles is None) == True:
