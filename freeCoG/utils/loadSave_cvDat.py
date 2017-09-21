@@ -1,4 +1,4 @@
-# loadSave_hough_dat.py 
+# loadSave_cv_dat.py 
 # script to save spherical hough data as volume and get 3d coords
 
 import scipy.io
@@ -16,7 +16,7 @@ img = nib.load(fname);
 hdr = img.get_header();
 affine = img.get_affine();
 
-# load 3d hough centers and spheres
+# load 3d centers and spheres
 img_data = scipy.io.loadmat('elec_spheres.mat');
 img_data = img_data.get('sphere_img');
 new_fname = 'CT_elecSpheres.nii';
@@ -45,10 +45,10 @@ z = coords[2];
 stackem = (x,y,z);
 coords = np.vstack(stackem);
 coords = np.transpose(coords);
-scipy.io.savemat('3dHough_coords.mat', {'coords':coords});
+scipy.io.savemat('3dcv_coords.mat', {'coords':coords});
 
 
-# plot the hough center results
+# plot the cv center results
 s = 202
 fig = plt.figure(facecolor="white");
 ax = fig.add_subplot(111,projection='3d');
