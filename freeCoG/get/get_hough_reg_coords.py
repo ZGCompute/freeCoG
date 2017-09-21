@@ -1,27 +1,27 @@
-# get_hough_reg_coords.py
+# get_reg_coords.py
 
 import os
 import numpy as np
 import nibabel as nib
 import scipy.io
 
-def reg_hough_coords(coords_img,source, target):
+def reg_coords(coords_img,source, target):
     
-    # load in detected hough electrode coordinates
+    # load in detected electrode coordinates
     # from source CT img
     coords_img = nib.load(coords_img);
     coords_data = coords_img.get_data();
     
     # grab 1's from img representing detected 
-    # electrode centers from hough transform
+    # electrode centers from cv
     coords = np.nonzero(coords_data);
     x = np.array(coords[0]);
     y = np.array(coords[1]);
     z = np.array(coords[2]);
     vox_coords = np.column_stack((x,y,z));
     
-    # save hough electrode centers as voxel coords in native CT space
-    scipy.io.savemat('Hough_vox_coords.mat', {'elecmatrix':vox_coords});
+    # save electrode centers as voxel coords in native CT space
+    scipy.io.savemat('cv_vox_coords.mat', {'elecmatrix':vox_coords});
     
     # load in CT2MM affine matrix
     CT_img = nib.load(source);
@@ -37,14 +37,14 @@ def reg_hough_coords(coords_img,source, target):
     
     # apply CT2MRI affine registration
     reg_coords = nib.affines.apply_affine(CT2MRI,coords);
-    scipy.io.savemat('Hough_reg_coords.mat', {'elecmatrix':reg_coords});
+    scipy.io.savemat('cv_reg_coords.mat', {'elecmatrix':reg_coords});
     
     # save hough reg voxel coords in a NIFTI img for QC
     elecs_img = np.zeros(MRI_data.shape);
     for i in reg_coords:
        elecs_img[i[0], i[1], i[2]] = 1;
     N = nib.Nifti1Image(elecs_img,MRI2mm,MRI_hdr);
-    N.to_filename('Hough_reg_coords.nii.gz');
+    N.to_filename('cv_reg_coords.nii.gz');
     
     # vox2Ras affine for all fs orig volumes
     vox2RAS = np.array([[  -1.,    0.,    0.,  128.],
@@ -54,4 +54,4 @@ def reg_hough_coords(coords_img,source, target):
     
     # apply vox2RAS to get surface mesh (sRAS) coordinates      
     sRAS_coords = nib.affines.apply_affine(vox2RAS,reg_coords);
-    scipy.io.savemat('Hough_sRAS_coords.mat', {'elecmatrix':sRAS_coords});
+    scipy.io.savemat('cv_sRAS_coords.mat', {'elecmatrix':sRAS_coords});
