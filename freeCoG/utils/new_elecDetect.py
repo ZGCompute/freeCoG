@@ -1,5 +1,5 @@
 # new_elecDetect.py
-# function uses 3d ough transform to extract electrode center coordinates
+# function uses 3d cv alg to extract electrode center coordinates
 # from a post-implant CT, and corregisters the ouputs to a pre-implant
 # T1 weighted MRI.
 
@@ -39,22 +39,15 @@ def elecDetect(CT_dir, fs_dir,img, thresh_f, thresh_c, frac, num_gridStrips, n_e
     print "::: Applying guassian smooth of 2.5mm to thresh-CT :::";
     img_filt(fname);
     
-    # compute hough transform to find electrode center coordinates
+    # compute cv alg to find electrode center coordinates
     mlab = matlab.MatlabCommand();
-    mlab.inputs.script = "addpath(genpath('/Volumes/Thunderbolt_Duo/Scripts/Matlab/SphericalHough')); \
-    img = readFileNifti('%s/smoothed_thresh_CT.nii');img = img.data(); \
-    fltr4LM_R = 3; obj_cint = 0.0; radrange = [0.1, 3]; multirad = 0.3; \
-    grdthres = 0.33;\
-    [center_img,sphere_img,sphcen2,sphrad]=SphericalHough(img,radrange,grdthres, \
-    fltr4LM_R, multirad, obj_cint); save('%s/elec_spheres.mat', 'sphere_img'); \
-    save('%s/elec_centers.mat', 'center_img'); \
-    save('%s/3d_hough_elect_coords.mat', 'sphcen2');" %(CT_dir, CT_dir , CT_dir, CT_dir);
+    mlab.inputs.script = "" %(CT_dir, CT_dir , CT_dir, CT_dir);
     
-    print "::: Applying 3D hough transform to smoothed thresh-CT :::";        
+    print "::: Applying 3D cv alg to smoothed thresh-CT :::";        
     out = mlab.run(); # run the hough and get errors if any ocur
 
     # save txt version of hough putputs
-    coords = scipy.io.loadmat(CT_dir + '/'+ '3dHough_coords.mat').get('coords')
+    coords = scipy.io.loadmat(CT_dir + '/'+ '3dcv_coords.mat').get('coords')
     np.savetxt('dirty_elecsAll.txt', coords, delimiter=' ', fmt='%-7.1f');
     
     # run fsl FLIRT to compute CT-MRI registration
@@ -67,7 +60,7 @@ def elecDetect(CT_dir, fs_dir,img, thresh_f, thresh_c, frac, num_gridStrips, n_e
             
     # use fsl to calc voxel coords for elec centers in CT registered to orig 
     # in RAS voxel coordinates using affine from FLIRT
-    print "::: Applying FLIRT transformation to 3d Hough ouput :::";
+    print "::: Applying FLIRT transformation to 3d cv ouput :::";
     orig_brain = fs_dir + '/orig.nii';
     os.system('cat %s/dirty_elecsAll.txt | img2imgcoord -src %s/CT.nii -dest %s \
     -xfm %s/CT_flirt.mat -vox > %s/dirty_elecsAll_RAS.txt' %(CT_dir, CT_dir, orig_brain, fs_dir, CT_dir));
