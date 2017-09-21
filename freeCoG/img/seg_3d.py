@@ -1,6 +1,6 @@
-#seg_Hough3d.py
+#seg_3d.py
 
-# function to manually clean outputs of 3D spehrical hough
+# function to manually clean outputs of 3D 
 # electrode detection
 
 import time
