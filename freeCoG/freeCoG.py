@@ -1535,17 +1535,10 @@ class freeCoG:
 
        # compute cv alg to find electrode center coordinates
        mlab = matlab.MatlabCommand();
-       mlab.inputs.script = "addpath(genpath('%s')); addpath(genpath('%s')); addpath(genpath('%s')); addpath(genpath('%s')); \
-       img = readFileNifti('%s/smoothed_thresh_CT.nii');img = img.data(); \
-       fltr4LM_R = 3; obj_cint = 0.0; radrange = [0.1, 3]; multirad = 0.3; \
-       grdthres = 0.33; \
-       [center_img,sphere_img,sphcen2,sphrad]=CV(img,radrange,grdthres, \
-       fltr4LM_R, multirad, obj_cint); save('%s/elec_spheres.mat', 'sphere_img'); \
-       save('%s/elec_centers.mat', 'center_img'); \
-       save('%s/3d_elect_coords.mat', 'sphcen2');" %(self.CV_dir, self.VISTA_dir, self.SPM_dir, self.VISTA_dir, self.CT_dir, self.CT_dir , self.CT_dir, self.CT_dir);
+       mlab.inputs.script = "" %(self.CV_dir, self.VISTA_dir, self.SPM_dir, self.VISTA_dir, self.CT_dir, self.CT_dir , self.CT_dir, self.CT_dir);
     
        print "::: Applying 3D cv alg to smoothed thresh-CT :::";        
-       out = mlab.run(); # run the hough and get errors if any ocur
+       out = mlab.run(); # run the cv alg and get errors if any ocur
 
        # save txt version of putputs
        coords = scipy.io.loadmat(self.CT_dir + '/'+ '3d_cv_elect_coords.mat').get('sphcen2')
