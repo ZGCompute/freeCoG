@@ -5,7 +5,7 @@
 # University of California, San Francisco
 # Date Last Edited: July 21, 2015
 
-# This file contains the chang lab imaging pipeline (freeCoG)
+# This file contains the imaging pipeline (freeCoG)
 # as one importable python class for running a patients
 # brain surface reconstruction and electrode localization/labeling
 # as well as dwi and tractography for reconstructing 
