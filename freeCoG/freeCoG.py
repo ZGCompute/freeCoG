@@ -40,7 +40,7 @@ from nipype.interfaces.fsl import FLIRT
 
 class freeCoG:
 
-   # intialize class img_pipe constructor
+   # class constructor
    def __init__(self, subj_dir,subj):
       self.subj = subj;
       self.subj_dir = subj_dir;
@@ -528,12 +528,10 @@ class freeCoG:
       labels_dir = elecs_dir + '/labels';
     
       # check if labels dir already exists
-      if os.path.isdir(labels_dir) == True:
-        
+      if os.path.isdir(labels_dir) == True:       
           None;
         
-      else:
-        
+      else:       
           os.mkdir('labels');
     
       # go in to labels dir   
