@@ -20,64 +20,25 @@ import nipy
 from scipy.spatial.distance import cdist
 import collections
 import time
+
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import mahotas
 import subprocess
 import itertools
 import shlex
+
 from dipy.segment.mask import median_otsu
 from nipy.algorithms.kernel_smooth import LinearFilter
 import mayavi
 from mayavi import mlab
+
 from nipype.interfaces import matlab as matlab
 from nipype.interfaces import spm
 from nipype.interfaces import fsl
 from nipype.interfaces.fsl import FLIRT
 
-
-
 class freeCoG:
-
-   # blank var for patient name
-   subj = '';  
-   
-   # blank var for patient hem of implantation
-   hem='';
-
-   # fs subjects dir on server where you run img_pipe
-   subj_dir = "/path/to/subjects/";
-   
-   # IP of home computer to requester data from
-   home = "";
-   
-   # directory where imaging data is on your home machine
-   # (not the server your running img_pipe on
-   home_data_dir = '/path/to/subjects/';
-   
-   # set python and bash "areal" scripts dir on current server
-   bash_dir = '/path/to/bash';
-   python_dir = '/path/to/python';
-   AFQ_dir = '/path/to/AFQ';
-   SPM_dir = '/path/to/spm12';
-   VISTA_dir = '/path/to/vistasoft-master';
-   CV_dir = '';
-   project_elecs_dir = '/path/to/electrode_placement/';  
- 
-   # set dir for CT img data
-   CT_dir = subj_dir + subj + '/CT/';
-   
-   # set dir for elecs coordinates
-   elecs_dir = subj_dir + subj + '/elecs/';
-   
-   # set dir for DWI raw data and processed/tractography
-   DWI_dir = '';
-   DWI_bval =2000;
-   
-   # dir for fs look up table
-   fsLUT_dir = '/usr/local/freesurfer/';
-   fs_dir = subj_dir + '/' + subj + '/';
-
 
    # intialize class img_pipe constructor
    def __init__(self, subj_dir,subj):
@@ -87,8 +48,6 @@ class freeCoG:
       self.elecs_dir = subj_dir + '/' + self.subj + '/elecs/';
       self.DWI_dir = subj_dir + '/' + self.subj + '/DTI_HARDI_55_2000/';
       self.fs_data_dir = subj_dir + '/' + self.subj + '/fs_data/';
-
-
 
    # method for running surface reconstruction using freesurfer
    def prep_recon(self):
@@ -114,15 +73,12 @@ class freeCoG:
 	# start tmux
 	os.system("tmux");
 
-
    # function to run freesurfer recon-all
    def get_recon(self):
        
        # run recon-all for target subject
        os.system('recon-all -subjid %s -all -3T -openmp 12 -use-gpu' %(self.subj));
        
-       
-
    # member function for converting freesurfer output .asc mesh files to .mat 
    # vertex and triangle coord lists
    def convert_fs2mlab(self,lh,rh):
@@ -130,7 +86,6 @@ class freeCoG:
       '''Member function for converting freesurfer output .asc mesh files to .mat
          vertex and triangle coord lists. lh and rh args are lh.pial and rh.pial
          freesurfer mesh file (full-path) respectively'''
-    
     
       # use freesurfer mris_convert to get ascii pial surface for lh
       lh_ascii = lh + '.asc';
@@ -152,7 +107,6 @@ class freeCoG:
       lh_inds = lh_inds.split(' '); # seperate inds into two strings
       lh_inds = [int(i) for i in lh_inds];# convert string to ints
     
-
       # get rows for vertices only, strip 0 column, and split into seperate strings
       lh_vert = [item.strip(' 0') for item in lh_mat[:lh_inds[0]]];
       lh_vert = [item.split('  ') for item in lh_vert]; # seperate strings
@@ -224,7 +178,6 @@ class freeCoG:
       rh_inds = rh_inds.split(' '); # seperate inds into two strings
       rh_inds = [int(i) for i in rh_inds];# convert string to ints
     
-
       # get rows for vertices only, strip 0 column, and split into seperate strings
       rh_vert = [item.strip(' 0') for item in rh_mat[:rh_inds[0]]];
       rh_vert = [item.split('  ') for item in rh_vert]; # seperate strings
@@ -284,8 +237,6 @@ class freeCoG:
       rh_inds = scipy.mat(rh_inds);
       scipy.io.savemat('rh_inds.mat', {'inds':rh_inds});# save inds
 
-
-
    # method for obtaining .mat files for vertex and triangle
    # coords of all subcortical freesurfer segmented meshes; needs self.subcortFs2mlab
    def get_subcort(self):
@@ -320,20 +271,17 @@ class freeCoG:
                    'rLatVent', 'rInfLatVent', 'rVentDienceph', 'lLatVent', 'lInfLatVent', \
                     'lThal', 'lCaud', 'lPut',  'lGP', 'lHipp', 'lAmgd', 'lAcumb', 'lVentDienceph',\
                      'lThirdVent', 'lFourthVent', 'lBrainStem'];
-                       
-      
+                      
       print "::: Converting all ascii segmentations to matlab tri-vert :::";
       for i in range(len(subcort_list)):
           subcort  = subjAscii_dir + '/' + subcort_list[i];
           nuc = subjAscii_dir + '/' + nuc_list[i];
           self.subcortFs2mlab(subcort,nuc);
  
-
    # method for obtaining freesurfer mni coords using mri_cvs_normalize
    def get_cvsWarp(self):
 
       '''Method for obtaining freesurfer mni coords using mri_cvs_normalize'''
-
 
       # define patient root and fs_dir
       subjects_dir = self.subj_dir;
@@ -368,16 +316,13 @@ class freeCoG:
          coords = np.array(coords);
          new_fname = mni_voxCoords.replace('.txt', '.mat');
          scipy.io.savemat(new_fname, {'elecmatrix': coords});
-
-         
-                           
+           
    # method calls annot2dpv and splitsrf to tessellate and render meshes 
    # for freesurfer cortical parcellation meshes      
    def get_cortSegMeshes(self):
     
       '''Method calls annot2dpv and splitsrf to tessellate and render meshes
          for freesurfer cortical parcellation meshes'''
-
 
       # location of freesurfer look up table for naming ROIs
       fsLUT_dir= self.fsLUT_dir;
@@ -441,8 +386,7 @@ class freeCoG:
       os.system('mv %s/%s_pial_rois/*tri.mat %s/%s_pial_rois/tri' %(surf_dir,hem,surf_dir,hem));
       os.system('mv %s/%s_pial_rois/*vert.mat %s/%s_pial_rois/vert' %(surf_dir,hem,surf_dir,hem));
       os.system('mv %s/%s_pial_rois/*inds.mat %s/%s_pial_rois/inds' %(surf_dir,hem,surf_dir,hem));
-   
-      
+     
    # member function for anatomical labeling of electrodes based on euclidean
    # distance from gyrul mesh segmentation (freesurfer)   
    def get_elecLabels(self, elecs):
@@ -534,7 +478,6 @@ class freeCoG:
          # current mesh) 
          min_eucDists_all[roi] = min_eucDists;
        
-
       # 4.) find electrodes that are close to two rois and compare to find closest 
       # roi for a given electrode 
   
@@ -562,7 +505,6 @@ class freeCoG:
                # change the key label to the closest region
                w[k] = closest;
                  
-
       # output final list of each electrodes label
       elec_labels =[];
       for k in w.keys():
@@ -579,7 +521,6 @@ class freeCoG:
       label_rois = set(elec_labels);
       label_rois = list(label_rois);
         
-    
       # 5.) Save final outputs  
       # create dirs for saved labeled elecs
       os.chdir(root + '/elecs');
@@ -615,11 +556,8 @@ class freeCoG:
              keys.insert(missed, missed);
              elec_labels.insert(missed,elec_labels[missed]);
            
-    
          keys.sort(); # make sure keys is in order
           
-           
-        
       # save each list of labeld elecs
       for roi in label_rois:
         
@@ -636,11 +574,8 @@ class freeCoG:
           fname = elec_name + '_' + roi + '_elecs.mat';
           scipy.io.savemat(fname, {'elecmatrix':labeled_elecs});
 
-
       # return list of elec_labels
-      return elec_labels;
-      
-      
+      return elec_labels;   
       
    # member function for cleaning outputs of CV
    # electrode detection.    
@@ -650,7 +585,6 @@ class freeCoG:
          electrode detection. fname arg is a full-path
          to a .mat file containing a variable w/
          xyz matrix (nx3) of elec center coordinates'''
-
 
       # load in 3D hough output
       coords = scipy.io.loadmat(self.CT_dir + '/' + fname).get('sphcen2');
@@ -662,8 +596,7 @@ class freeCoG:
       s = 150;
       fig = plt.figure(facecolor="white");
       ax = fig.add_subplot(111,projection='3d');
-    
-
+   
       # create point and click function for selecting false alarm points
       false_elecs = [];
       def onpick(event):
@@ -728,7 +661,6 @@ class freeCoG:
              Y = clean_coords[:,1];
              Z = clean_coords[:,2];
 
-
              s = 150;
              fig = plt.figure(facecolor="white");
              ax = fig.add_subplot(111,projection='3d');
@@ -741,8 +673,6 @@ class freeCoG:
             
              return clean_coords;
              break;
-
-
 
    # member function for windowed intensity based thresholding of an img
    # thresh_f is the intensity floor, and thresh_c is the intensity ceiling
@@ -781,7 +711,6 @@ class freeCoG:
       N = nib.Nifti1Image(CT_thresh,affine,hdr);
       N.to_filename(new_fname);
       
-
    # member function for interpolating depth probe
    # contact coordinates from two endpoint coordinates
    def interp_depth(self,elec1, elec2, numElecs, fname):
@@ -812,9 +741,7 @@ class freeCoG:
 
       #  save result
       scipy.io.savemat(fname, {'elecmatrix':elecmatrix});
-      
-      
-      
+          
    # member function for converting a .mat electrode coordinate list
    # to image coordinates in a NIFTI volume for quality checking
    def elecs2brainVox(self, img, elecs_file, voxCoords_fname, elecsVol_fname):
@@ -868,7 +795,6 @@ class freeCoG:
       # return electrode voxel coordinates in fs orig space
       return elec_vox;
       
-      
    # member function to resample a high density grid (256) 
    # to clinical low-desnity montage (64)  
    def get_clinGrid(self):
@@ -899,14 +825,11 @@ class freeCoG:
 
        # save resmpled clinical grid
        scipy.io.savemat('clinical_grid.mat', {'elecmatrix':clinGrid});  
-       
-       
-       
+        
    # function for running streamlines tractography between 
    # all freesurfer rois for a given subject. 
    def get_Connectome(self):
     
-
       # set up var for DWI dir and roi dir
       DWI_dir = self.DWI_dir;
       roi_dir = self.subj_dir + self.subj + '/mri/crtx_subcort_ROIs/';
@@ -918,7 +841,6 @@ class freeCoG:
    
       # create dir for ouput of tractography
       os.mkdir('roi_roi_tcks');
-
    
       # run roi-roi tractography for all roi pars
       for roi in roi_list:
@@ -933,9 +855,7 @@ class freeCoG:
     
       exit# clean up results              
       os.system('mv *.tck roi_roi_tcks/');
-      
-      
-      
+        
    # function gets freesurfer c_RAS vector
    # to save for shifting meshes into orig space correctly
    def get_cRAS(self):
@@ -959,7 +879,6 @@ class freeCoG:
     
       return c_RAS; 
 
-
    # function to clean outputs of AFQ wm bundle segmentation on CSD data
    def clean_fiberOutliers(self):
        
@@ -976,15 +895,13 @@ class freeCoG:
                                 fgs(i) = fgclean; \
                              end; \
                              save('%s/dti55trilin/CSD_segmented_fibers_clean.mat', 'fgs');" %(self.AFQ_dir, self.SPM_dir, self.VISTA_dir, self.DWI_dir, self.DWI_dir);
-       
-       
+            
        print "::: Cleaning AFQ WM Bundle Segmentation :::";        
        out = mlab.run();
        print "::: Finished :::"
 
        return out;
-          
-          
+                  
    # script takes dtiInit output DWI and produces masked DWI and binary mask
    def get_DWImask(self):
     
@@ -1003,9 +920,6 @@ class freeCoG:
       # save mask and dwi masked
       nibabel.save(mask_img, 'binary_mask.nii.gz');
       nibabel.save(dwi_img, 'dwi_mask.nii.gz');
-
-
-
 
    # Script extracts tensor models, FA, and major eigenvectors from HARDI diffusion 
    # data pre-processed with vistasoft-AFQ dtiInit pipeline (disotrtion-eddy current 
@@ -1047,8 +961,7 @@ class freeCoG:
     
       # perform probabilistic tracography on FOD fields
       os.system('tckgen FOD.mif full_brain.tck -seed_image dwi.mif -mask mask.mif -number 1000000 -nthreads 12');
-      
-      
+           
    # member function to apply a guassian smoth to a NIFTI img
    def img_filt(self, fname):
     
@@ -1075,7 +988,6 @@ class freeCoG:
       N = nib.Nifti1Image(smoothed_CT,affine,hdr);
       new_fname = 'smoothed_' + fname;
       N.to_filename(new_fname);
- 
     
    def make_CortROIs(self):
     
@@ -1178,9 +1090,7 @@ class freeCoG:
       mesh.actor.property.interpolation = 'phong';
       mesh.scene.light_manager.light_mode = 'vtk';
 
-
       return mesh;
-
 
    # member function to plot electrode coordinates
    def el_add(self, elecs, color, s):
@@ -1236,7 +1146,6 @@ class freeCoG:
           index = elec_vert_list.index(v);
           s[v] = wts[index] * guass;
 
-
        # plot cortex and begin display                                                                           
        mlab.figure(fgcolor=(0, 0, 0), bgcolor=(1, 1, 1));
        mesh = mlab.triangular_mesh(x,y,z,tri, scalars=s, colormap='RdBu');
@@ -1275,8 +1184,7 @@ class freeCoG:
           fiber_mesh.actor.property.diffuse = 1.0;
           fiber_mesh.actor.property.interpolation = 'phong';
           fiber_mesh.scene.light_manager.light_mode = 'vtk';
-          
-          
+                    
    # plot translucent glass brain surface 
    def glass_brain(self, tri,vert):
     
@@ -1303,10 +1211,8 @@ class freeCoG:
       mesh.actor.property.interpolation = 'phong';
       mesh.scene.light_manager.light_mode = 'vtk';
 
-
       return mesh;
       
-
    # function to run DWI pre-processing and way-point roi
    # based tractography of major white-matter bundles
    def DWI_preproc(self):
@@ -1333,9 +1239,7 @@ class freeCoG:
        print "::: Initiating DWI pre-processing and WM Bundle Segmentation :::";        
        out = mlab.run();
        print "::: Finished :::";
-       
-       
-       
+           
    # function to copy fs brain.mgz to DWI dir
    # and convert both DWI and brain to LAS orientation before pre-proc
    def prep_DWI_brain(self):
@@ -1356,8 +1260,7 @@ class freeCoG:
       os.system('fslorient -forceneurological %s' %(self.DWI_brain));
       self.DWI_raw = self.DWI_raw_dir + '/dwi.nii.gz';
       os.system('fslorient -forceneurological %s' %(self.DWI_raw));
-      
-   
+         
    # function to convert freesurfer ascii subcort segmentations
    # to triangular mesh array .mat style   
    def subcortFs2mlab(self, subcort,nuc):
@@ -1440,7 +1343,6 @@ class freeCoG:
       subcort_inds = scipy.mat(subcort_inds);
       scipy.io.savemat('subcort__%s_inds.mat' %(nuc), {'inds':subcort_inds});# save inds   
       
-
    # function to convert pial roi segmentations from freesurfer
    # to matlab style .mat triangular mesh data
    def pialROI_2mlab(self, fname):
@@ -1463,7 +1365,6 @@ class freeCoG:
        roi_inds = roi_inds.split(' '); # seperate inds into two strings
        roi_inds = [int(i) for i in roi_inds];# convert string to ints
       
-
        # get rows for vertices only, strip 0 column, and split into seperate strings
        roi_vert = [item.strip(' 0') for item in roi_mat[:roi_inds[0]]];
        roi_vert = [item.split(' ') for item in roi_vert]; # seperate strings
@@ -1526,7 +1427,6 @@ class freeCoG:
        new_fname = fname.replace('.asc', '_inds.mat');
        scipy.io.savemat(new_fname, {'inds':roi_inds});# save inds   
        
-
    # member function to compute cv algorithm for localizing electrode centers from post-implant CT
    def cv_detect(self):
        
@@ -1557,9 +1457,7 @@ class freeCoG:
        N = nib.Nifti1Image(img_data,affine,hdr);
        N.to_filename(new_fname);
 
-
        return coords, out;
-
 
    # member function to obtain only unique coordinates for fibers from AFQ 
    def get_unique_fibers(self,CSD):
@@ -1585,7 +1483,6 @@ class freeCoG:
          # get number of fibers for current bundle                                                                       
          num_fibers = len(bundle_coords);
 
-
          # remove repeat 3d coordinates for each fiber of each bundle                                              
          for j in range(num_fibers):
 
@@ -1609,18 +1506,15 @@ class freeCoG:
             fiber_coords = np.transpose(fiber_coords);
             bundle_coords[j][0] = fiber_coords;
 
-
          #  replace old bundle coordinates with new unique only coordinates
          fgs[0][i][8] = bundle_coords;
    
       # save the new CSD file with unique fiber coordinates
       scipy.io.savemat(fname, {'fgs':fgs});
 
-
    # member function to load in results of AFQ wm bundle segmentation 
    # and shift fiber coords into fs sRAS 
    def parse_CSD_seg(self, CSD,c_RAS):
-
 
        # load in matlab AFQ style CSD bundle segmentations
        CSD = scipy.io.loadmat(CSD);
@@ -1650,13 +1544,10 @@ class freeCoG:
              fiber_coords = np.transpose(fiber_coords);
              fiber_coords = fiber_coords - c_RAS;
              bundle_coords[j][0] = fiber_coords;
-
-       
+      
           # save current bundle in .mat file
           fname = bundle_name + '_sRAS.mat';
           scipy.io.savemat(fname, {'fg':bundle_coords});
-
-
 
    # member function for applying CT 2 MRI registration to
    # electrode center coordinates from cv alg
@@ -1673,7 +1564,6 @@ class freeCoG:
              used to calculate the cv alg.
          3.) target - the patients orig.nii freesurfer volume
              output in the /mri folder after running recon-all.'''    
-
 
       # load in detected cv electrode coordinates
       # from source CT img
@@ -1722,11 +1612,9 @@ class freeCoG:
     
       # apply vox2RAS to get surface mesh (sRAS) coordinates      
       sRAS_coords = nib.affines.apply_affine(vox2RAS,reg_coords);
-      scipy.io.savemat(self.CT_dir + '/Hough_sRAS_coords.mat', {'elecmatrix':sRAS_coords});
-
+      scipy.io.savemat(self.CT_dir + '/Hough_sRAS_coords.mat', {'elecmatrix':sRAS_coords})
 
       return sRAS_coords;
-
 
    # function to run nmi coregistration between two NIFTI images
    # using SPMs normalizated mutual information algorithm.
@@ -1734,7 +1622,6 @@ class freeCoG:
 
       '''function to run nmi coregistration between two NIFTI images
          using SPMs normalizated mutual information algorithm.'''
-
 
       # create instance of spm.Corregister to run mutual information
       # registration between source and target img
@@ -1750,8 +1637,6 @@ class freeCoG:
       # run coregistration
       print "::: Computing registration between CT and MRI :::";
       coreg.run();
-
-
    
    # function to run matlab project_electrodes code
    # for projecting electrode coordinates onto a surface mesh
